@@ -4,14 +4,14 @@
 
 
 #pragma once
-
-
+#include "GLRenderer.h"
 class COpenGLDoc : public CDocument
 {
 protected: // create from serialization only
 	COpenGLDoc();
 	DECLARE_DYNCREATE(COpenGLDoc)
-
+public:
+	CGLRenderer m_instanceOGL;
 // Attributes
 public:
 

@@ -72,6 +72,31 @@ bool CGLRenderer::CreateGLContext(CDC* pDC)
 	glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
 	return true;
 }
+
+void CGLRenderer::InitScene(std::string strFilename)
+{
+	if(!m_model.load("models\\TableDesk-AgiSoft.obj", TypeObject::SPECULAR))
+	{
+		AfxMessageBox(L"Problems Loading the file");
+	}
+	m_progBase.loadShader("shaders/basic.vert", CGLSLProgram::VERTEX);
+	m_progBase.loadShader("shaders/basic.frag", CGLSLProgram::FRAGMENT);
+		m_progBase.create_link();
+		m_progBase.enable();
+		m_progBase.addAttribute("vVertex");
+		m_progBase.addAttribute("vNormal");
+		m_progBase.addAttribute("vColor");
+		m_progBase.addAttribute("vTexCoord");
+		m_progBase.addUniform("mProjection");
+		m_progBase.addUniform("sTexture");
+		m_progBase.addUniform("bHasTexture");
+		m_progBase.addUniform("mModelView");
+	m_progBase.disable();
+	m_modelMatrix = glm::mat4x4(1);
+	m_modelViewMatrix = glm::mat4x4(1);
+	m_projMatrix = glm::mat4x4(1);
+}
+
 void gluPerspective2(GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zFar)
 {
 	const GLdouble pi = 3.1415926535897932384626433832795;

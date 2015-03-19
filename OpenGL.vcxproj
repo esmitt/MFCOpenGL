@@ -101,7 +101,13 @@
   <ItemGroup>
     <ClInclude Include="ChildFrm.h" />
     <ClInclude Include="GLRenderer.h" />
+    <ClInclude Include="GLSLProgram.h" />
+    <ClInclude Include="loader\3DModel.h" />
+    <ClInclude Include="loader\BoundingBox.h" />
+    <ClInclude Include="loader\FreeImage.h" />
+    <ClInclude Include="loader\Texture.h" />
     <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="OGLBasic.h" />
     <ClInclude Include="OpenGL.h" />
     <ClInclude Include="OpenGLDoc.h" />
     <ClInclude Include="OpenGLView.h" />
@@ -112,6 +118,10 @@
   <ItemGroup>
     <ClCompile Include="ChildFrm.cpp" />
     <ClCompile Include="GLRenderer.cpp" />
+    <ClCompile Include="GLSLProgram.cpp" />
+    <ClCompile Include="loader\3DModel.cpp" />
+    <ClCompile Include="loader\BoundingBox.cpp" />
+    <ClCompile Include="loader\Texture.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="OpenGL.cpp" />
     <ClCompile Include="OpenGLDoc.cpp" />

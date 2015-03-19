@@ -62,10 +62,9 @@ void COpenGLView::OnDraw(CDC* pDC)
 		return;
 
 	// TODO: add draw code for native data here
-	m_instanceOGL.DrawScene(pDC);
-	//pDC->LineTo(200, 200);
+	//GetDocument()
+	GetDocument()->m_instanceOGL.DrawScene(pDC);
 }
-
 
 // COpenGLView printing
 
@@ -84,7 +83,6 @@ void COpenGLView::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
 {
 	// TODO: add cleanup after printing
 }
-
 
 // COpenGLView diagnostics
 
@@ -115,12 +113,11 @@ int COpenGLView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CView::OnCreate(lpCreateStruct) == -1)
 		return -1;
 	CClientDC dc(this);
-	m_instanceOGL.CreateGLContext(&dc);
+	GetDocument()->m_instanceOGL.CreateGLContext(&dc);
 	// TODO:  Add your specialized creation code here
 
 	return 0;
 }
-
 
 void COpenGLView::OnDestroy()
 {
@@ -128,18 +125,16 @@ void COpenGLView::OnDestroy()
 
 	// TODO: Add your message handler code here
 	CClientDC dc(this);
-	m_instanceOGL.DestroyScene(&dc);
+	GetDocument()->m_instanceOGL.DestroyScene(&dc);
 }
 
 
 void COpenGLView::OnSize(UINT nType, int cx, int cy)
 {
 	CView::OnSize(nType, cx, cy);
-
 	// TODO: Add your message handler code here
 	CClientDC dc(this);
-	m_instanceOGL.Reshape(&dc, cx, cy);
-	//Invalidate(FALSE);
+	GetDocument()->m_instanceOGL.Reshape(&dc, cx, cy);
 }
 
 

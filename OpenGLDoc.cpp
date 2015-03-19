@@ -30,7 +30,11 @@ END_MESSAGE_MAP()
 COpenGLDoc::COpenGLDoc()
 {
 	// TODO: add one-time construction code here
+	//AllocConsole();
 
+	//*stdout = *_tfdopen(_open_osfhandle((intptr_t)GetStdHandle(STD_OUTPUT_HANDLE), _O_WRONLY), _T("a"));
+	//*stderr = *_tfdopen(_open_osfhandle((intptr_t)GetStdHandle(STD_ERROR_HANDLE), _O_WRONLY), _T("a"));
+	//*stdin = *_tfdopen(_open_osfhandle((intptr_t)GetStdHandle(STD_INPUT_HANDLE), _O_WRONLY), _T("r"));
 }
 
 COpenGLDoc::~COpenGLDoc()
@@ -41,14 +45,30 @@ BOOL COpenGLDoc::OnNewDocument()
 {
 	if (!CDocument::OnNewDocument())
 		return FALSE;
-
+	//if(!m_model.load("models\\TableDesk-AgiSoft.obj", TypeObject::SPECULAR))
+	//{
+	//	AfxMessageBox(L"Problems Loading the file");
+	//}
+	//m_progBase.loadShader("shaders/basic.vert", CGLSLProgram::VERTEX);
+	//m_progBase.loadShader("shaders/basic.frag", CGLSLProgram::FRAGMENT);
+	//	m_progBase.create_link();
+	//	m_progBase.enable();
+	//	m_progBase.addAttribute("vVertex");
+	//	m_progBase.addAttribute("vNormal");
+	//	m_progBase.addAttribute("vColor");
+	//	m_progBase.addAttribute("vTexCoord");
+	//	m_progBase.addUniform("mProjection");
+	//	m_progBase.addUniform("sTexture");
+	//	m_progBase.addUniform("bHasTexture");
+	//	m_progBase.addUniform("mModelView");
+	//m_progBase.disable();
+	//m_modelMatrix = glm::mat4x4(1);
+	//m_modelViewMatrix = glm::mat4x4(1);
+	//m_projMatrix = glm::mat4x4(1);
 	// TODO: add reinitialization code here
 	// (SDI documents will reuse this document)
-
 	return TRUE;
 }
-
-
 
 
 // COpenGLDoc serialization

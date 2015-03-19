@@ -122,7 +122,10 @@ BOOL COpenGLApp::InitInstance()
 	// The main window has been initialized, so show and update it
 	pMainFrame->ShowWindow(m_nCmdShow);
 	pMainFrame->UpdateWindow();
-
+//#ifdef _DEBUG
+//	if (!AllocConsole())
+//		AfxMessageBox(L"Failed to create the console!", MB_ICONEXCLAMATION);
+//#endif
 	return TRUE;
 }
 

@@ -3,14 +3,12 @@
 //
 
 #pragma once
-#include "GLRenderer.h"
 
 class COpenGLView : public CView
 {
 protected: // create from serialization only
 	COpenGLView();
 	DECLARE_DYNCREATE(COpenGLView)
-	CGLRenderer m_instanceOGL;
 // Attributes
 public:
 	COpenGLDoc* GetDocument() const;
