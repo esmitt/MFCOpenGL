@@ -29,6 +29,7 @@ int printOglError(char *file, int line)
 ///
 C3DModel::C3DModel()
 {
+	m_uVBO = m_uVBOIndex = m_uVBOColor = 0;
 	m_iIndexSize = 0;
 	m_vMaterial.clear();
 	m_vMesh.clear();
@@ -108,16 +109,16 @@ int global = 0;
 /// @param mMatrix
 ///
 //void C3DModel::fillNode(const struct aiNode* pNode, glm::mat4 mMatrix)
-void C3DModel::fillNode(const aiScene* scene, const struct aiNode* pNode, const glm::mat4 * mTheMatrix, int & iOffset, std::vector<Vertex> & vVertex, std::vector<unsigned int> & vIndex)
+void C3DModel::fillNode(const aiScene* scene, const struct aiNode* pNode, const glm::mat4 & mMatrix, int & iOffset, std::vector<Vertex> & vVertex, std::vector<unsigned int> & vIndex)
 {
 	aiMatrix4x4 aiMatrix = pNode->mTransformation;
 	//update the transform
-	glm::mat4x4 mModelMatrix =* mTheMatrix * glm::mat4x4(aiMatrix.a1, aiMatrix.a2, aiMatrix.a3, aiMatrix.a4,
+	glm::mat4x4 mModelMatrix = mMatrix * glm::mat4x4(aiMatrix.a1, aiMatrix.a2, aiMatrix.a3, aiMatrix.a4,
 																									 aiMatrix.b1, aiMatrix.b2, aiMatrix.b3, aiMatrix.b4,
 																									 aiMatrix.c1, aiMatrix.c2, aiMatrix.c3, aiMatrix.c4,
 																									aiMatrix.d1, aiMatrix.d2, aiMatrix.d3, aiMatrix.d4);
 	//std::cout << "1st" << std::endl;
-	glm::mat4x4 mNormalMatrix = glm::transpose(glm::inverse(*mTheMatrix));
+	glm::mat4x4 mNormalMatrix = glm::transpose(glm::inverse(mMatrix));
 	//std::cout << "number of meshes " << pNode->mNumMeshes << std::endl;
 	int k;
 	for(k = 0; k < pNode->mNumMeshes; k++)
@@ -198,7 +199,7 @@ void C3DModel::fillNode(const aiScene* scene, const struct aiNode* pNode, const 
 	// draw all children
 	for (k = 0; k < pNode->mNumChildren; k++)
 	{
-		fillNode(scene, pNode->mChildren[k], &mModelMatrix, iOffset, vVertex, vIndex);
+		fillNode(scene, pNode->mChildren[k], mModelMatrix, iOffset, vVertex, vIndex);
 	}
 }
 
@@ -209,7 +210,7 @@ void C3DModel::fillNode(const aiScene* scene, const struct aiNode* pNode, const 
 ///
 /// @return true if it is load correctly, false otherwise
 ///
-bool C3DModel::load(const std::string & sFilename, TypeObject::eTypeObject eType, glm::vec3 pCenterOn)
+bool C3DModel::load(const std::string & sFilename, const CGLSLProgram & program, glm::vec3 pCenterOn)
 {
 	TRACE("loading the file %s\n", sFilename.c_str());
 	//aiScene* scene;
@@ -219,11 +220,12 @@ bool C3DModel::load(const std::string & sFilename, TypeObject::eTypeObject eType
 	
 	if(!scene)
 	{
-		std::cout << "Import error: " <<importer.GetErrorString() << std::endl;
+		TRACE("Import error : %s\n", importer.GetErrorString());
 		return false;
 	}
 	//std::cout << "1" << std::endl;
 	m_bHasTextures = scene->HasTextures();
+	//m_bHasTextures = true;
 	//std::cout << " " << scene->mNumTextures << std::endl;
 	//scene contains all the information
 	int iOffset = 0;
@@ -231,7 +233,7 @@ bool C3DModel::load(const std::string & sFilename, TypeObject::eTypeObject eType
 	std::vector<Vertex> vVertex;
 	//std::cout << "before" << std::endl;
 	glm::mat4 mymatrix;
-	fillNode(scene, scene->mRootNode, &mymatrix, iOffset, vVertex, vIndex);
+	fillNode(scene, scene->mRootNode, glm::mat4(), iOffset, vVertex, vIndex);
 //std::cout << "1" << std::endl;
 	int iNumTriangles = 0;
 	for(int k = 0;k < m_vMesh.size(); k++)
@@ -253,65 +255,15 @@ bool C3DModel::load(const std::string & sFilename, TypeObject::eTypeObject eType
 			m_bbox.addPoint(glm::vec3(vVertex[k].pWorldCoord.x, vVertex[k].pWorldCoord.y, vVertex[k].pWorldCoord.z));
 		}
 	}
-	//std::cout << "3" << std::endl;
-	//unsigned int m_uVBO;
-	//unsigned int m_uVBOIndex;
-	//glGenVertexArrays(1, &m_uVAO);
-	//glBindVertexArray(m_uVAO);
 	
+	//creating the VAO
+	glGenVertexArrays(1, &m_uVAO);
+	glBindVertexArray(m_uVAO);
+
 	//creating the VBO
 	glGenBuffers(1, &m_uVBO);
 	glGenBuffers(1, &m_uVBOIndex);
-	//glGenBuffers(1, &m_uVBOColor);
-	//m_iIndexSize = vIndex.size();
-	//
-	//glBindBuffer(GL_ARRAY_BUFFER, m_uVBO);
-	//glBufferData(GL_ARRAY_BUFFER, vVertex.size() * sizeof(Vertex), &vVertex[0], GL_STATIC_DRAW);
 
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_uVBOIndex);	
-	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, vIndex.size()*sizeof(GL_UNSIGNED_INT), &vIndex[0], GL_STATIC_DRAW);
-
-	////glEnableVertexAttribArray(0);
-	////glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(0)); //Vertex
-	////glEnableVertexAttribArray(1);
-	////glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(GL_FLOAT) * 4)); //Normals
-	////glEnableVertexAttribArray(2);
-	////glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(GL_FLOAT) * 7)); //Text Coord
-
-	////glDisableVertexAttribArray(0);
-	////glDisableVertexAttribArray(1);
-	////glDisableVertexAttribArray(2);
-
-	//printOpenGLError();
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-//	glBindVertexArray(0);
-
-	//printOpenGLError();
-	/*
-	glBindBuffer(GL_ARRAY_BUFFER, m_uVBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_uVBOIndex);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(0)); //Vertex
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(GL_FLOAT) * 4)); //Normals
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(GL_FLOAT) * 7)); //Text Coord
-	//glDrawElements(GL_TRIANGLES,m_vIndex.size(),GL_UNSIGNED_INT,0);
-	for(int k = 0; k < m_vMesh.size(); k++)
-	{
-		//glActiveTexture(GL_TEXTURE7);
-		printOpenGLError();
-		m_vTexture[m_vTextureMatIndex[m_vMesh[k].iId]].bindTexture();
-		printOpenGLError();
-		glDrawRangeElements(GL_TRIANGLES,0,	m_iIndexSize, m_vMesh[k].iCount, GL_UNSIGNED_INT,BUFFER_OFFSET(sizeof(GL_UNSIGNED_INT)*m_vMesh[k].iFirst));
-		printOpenGLError();
-	}
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	//glActiveTexture(GL_TEXTURE7);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	*/
-std::cout << "4" << std::endl;
 	m_iIndexSize = vIndex.size();
 	glBindBuffer(GL_ARRAY_BUFFER, m_uVBO);
 	glBufferData(GL_ARRAY_BUFFER, vVertex.size() * sizeof(Vertex), &vVertex[0], GL_STATIC_DRAW);
@@ -319,20 +271,30 @@ std::cout << "4" << std::endl;
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_uVBOIndex);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, vIndex.size()*sizeof(GL_UNSIGNED_INT), &vIndex[0], GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(0)); //Vertex
+	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(GL_FLOAT) * 4)); //Normals
+	glEnableVertexAttribArray(1);
 	
+	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(GL_FLOAT) * 7)); //color
+	glEnableVertexAttribArray(2);
+
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(GL_FLOAT) * 11)); //Text Coord
+	glEnableVertexAttribArray(3);
+
+	glBindVertexArray(0);	//VAO
+
 	loadTextures(sFilename, scene);
-	m_eType = eType;
 	
 	importer.FreeScene();
 	vIndex.clear();
 	vVertex.clear();
 
-	std::cout << "material: " << m_vMaterial.size() << std::endl;
-	std::cout << "mesh: " << m_vMesh.size() << std::endl;
-	std::cout << "texture: " << m_vTexture.size() << std::endl;
-	std::cout << "texture mat index: " << m_vTextureMatIndex.size() << std::endl;
+	TRACE("material: %d\n", m_vMaterial.size());
+	TRACE("mesh: %d\n", m_vMesh.size());
+	TRACE("texture: %d\n", m_vTexture.size());
+	TRACE("texture mat index: %d\n", m_vTextureMatIndex.size());
 
 	return true;
 }
@@ -410,72 +372,13 @@ void C3DModel::loadTextures(const std::string& sFilename, const aiScene* pScene)
 ///
 void C3DModel::draw()
 {
-	//printOpenGLError();
-	glBindBuffer(GL_ARRAY_BUFFER, m_uVBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_uVBOIndex);
-	//printOpenGLError();
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(0)); //Vertex
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(GL_FLOAT) * 4)); //Normals
-	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(GL_FLOAT) * 7)); //color
-	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(GL_FLOAT) * 11)); //Text Coord
-	//if(hasTexture())
-		
-	//else
-		//printOpenGLError();
-	//glDrawElements(GL_TRIANGLES,m_vIndex.size(),GL_UNSIGNED_INT,0);
+	glBindVertexArray(m_uVAO);
 	for(int k = 0; k < m_vMesh.size(); k++)
 	{
-		//glActiveTexture(GL_TEXTURE7);
-		//printOpenGLError();
 		m_vTexture[m_vTextureMatIndex[m_vMesh[k].iId]].bindTexture();
-		//printOpenGLError();
-		glDrawRangeElements(GL_TRIANGLES,0,	m_iIndexSize, m_vMesh[k].iCount, GL_UNSIGNED_INT,BUFFER_OFFSET(sizeof(GL_UNSIGNED_INT)*m_vMesh[k].iFirst));
-		//glDrawElementsBaseVertex(GL_TRIANGLES, m_vMesh[k].iCount, GL_UNSIGNED_INT, NULL, m_vMesh[k].iFirst);
-		//printOpenGLError();
+		//glDrawRangeElements(GL_TRIANGLES,0,	m_iIndexSize, m_vMesh[k].iCount, GL_UNSIGNED_INT,BUFFER_OFFSET(sizeof(GL_UNSIGNED_INT)*m_vMesh[k].iFirst));
+		glDrawElementsBaseVertex(GL_TRIANGLES, m_vMesh[k].iCount, GL_UNSIGNED_INT, NULL, m_vMesh[k].iFirst);
 	}
+	glBindVertexArray(0);
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	//glActiveTexture(GL_TEXTURE7);
-	//glBindTexture(GL_TEXTURE_2D, 0);
-	//printOpenGLError();
-
-	//glBindBuffer(GL_ARRAY_BUFFER, m_uVBO);
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_uVBOIndex);
-	//glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(0)); //Vertex
-	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(GL_FLOAT) * 4)); //Normals
-	//glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(GL_FLOAT) * 7)); //Text Coord
-	////////////glDrawElements(GL_TRIANGLES,m_vIndex.size(),GL_UNSIGNED_INT,0);
-	//printOpenGLError();
-	////glBindVertexArray(m_uVAO);
-	//printOpenGLError();
-	//for(int k = 0; k < m_vMesh.size(); k++)
-	//{
-	//	glActiveTexture(GL_TEXTURE7);
-	//	printOpenGLError();
-	//	m_vTexture[m_vTextureMatIndex[m_vMesh[k].iId]].bindTexture();
-	//	printOpenGLError();
-	//	glDrawRangeElements(GL_TRIANGLES,0,	m_iIndexSize, m_vMesh[k].iCount, GL_UNSIGNED_INT,BUFFER_OFFSET(sizeof(GL_UNSIGNED_INT)*m_vMesh[k].iFirst));
-	//	//glDrawElementsBaseVertex(GL_TRIANGLES, m_vMesh[k].iCount, GL_UNSIGNED_INT, NULL, m_vMesh[k].iFirst);
-
-	//	printOpenGLError();
-	//}
-
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	////glBindVertexArray(0);
-	//glActiveTexture(GL_TEXTURE7);
-	//glBindTexture(GL_TEXTURE_2D, 0);
-	//printOpenGLError();
 }
-
-//draw on the client
-	//glBindBuffer(GL_ARRAY_BUFFER, m_uVBO);
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_uVBOIndex);
-	//glEnableClientState(GL_VERTEX_ARRAY);
-	//glVertexPointer( 3 , GL_FLOAT,sizeof(Vertex),BUFFER_OFFSET(0)) ;
-	//glDrawElements(GL_TRIANGLES,m_vIndex.size(),GL_UNSIGNED_INT,0);
-	//glDisableClientState(GL_VERTEX_ARRAY);
-
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);

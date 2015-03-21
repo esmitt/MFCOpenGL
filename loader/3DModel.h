@@ -15,6 +15,7 @@
 #endif
 #include <string>
 #include <vector>
+#include "../GLSLProgram.h"
 
 #ifdef _WIN32
 	#pragma comment (lib,"lib/assimp.lib")
@@ -44,14 +45,6 @@ struct Material
 		float fShininess;
 };
 
-struct TypeObject
-{
-	enum eTypeObject
-	{
-		REGULAR = 0,
-		SPECULAR = 1
-	};
-};
 
 ///
 /// Class C3DModel.
@@ -73,12 +66,11 @@ private:
 	GLuint m_uVAO;
 	unsigned int m_iIndexSize;
 	bool m_bHasTextures;
-	TypeObject::eTypeObject m_eType;
 
 
 	/// Recursive to explore all the elements
 	//void fillNode(const struct aiNode* pNode, glm::mat4 mMatrix);
-	void fillNode(const aiScene* scene, const struct aiNode* pNode, const glm::mat4* mMatrix, int & iOffset, std::vector<Vertex> & vVertex, std::vector<unsigned int> & vIndex);
+	void fillNode(const aiScene* scene, const struct aiNode* pNode, const glm::mat4 & mMatrix, int & iOffset, std::vector<Vertex> & vVertex, std::vector<unsigned int> & vIndex);
 
 	///Method applies the materials to an object given a mtl
 	void applyMaterial(const aiMaterial* pMaterial);
@@ -94,7 +86,7 @@ public:
 	inline bool hasTexture(){return m_bHasTextures;}
 
 	///Method to load an object
-	bool load(const std::string & sFilename, TypeObject::eTypeObject eType, glm::vec3 pCenterOn = glm::vec3(0));
+	bool load(const std::string & sFilename, const CGLSLProgram & program, glm::vec3 pCenterOn = glm::vec3(0));
 
 	///Draw the object using the VBO
 	void draw();

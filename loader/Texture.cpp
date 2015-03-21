@@ -1,9 +1,7 @@
-#include "stdafx.h"
-#define FILE_REVISION "$Revision: $"
+﻿#include "stdafx.h"
 #ifdef _WIN32
 	#pragma comment (lib,"lib/FreeImage.lib")
 #endif
-
 
 //Includes
 #ifdef _WIN32
@@ -101,7 +99,22 @@ void CTexture::createEmptyTexture2DClampToBorder(GLuint Width, GLuint Height,
 	
 }
 
-
+#define GL_CHECK_ERRORS assert(glGetError()== GL_NO_ERROR);
+#define printOpenGLError() printOglError2(__FILE__, __LINE__)
+int printOglError2(char *file, int line)
+{
+	GLenum glErr;
+	int    retCode = 0;
+	glErr = glGetError();
+	while (glErr != GL_NO_ERROR)
+	{
+		///std::cout << "glError in file " << file << "@ line " << line << ": " << gluErrorString(glErr) << std::endl;
+		TRACE(L"glError in file %s @ line %d", file, line);
+		retCode = 1;
+		glErr = glGetError();
+	}
+	return retCode;
+}
 
 /**
 * Method to load a texture from a file
@@ -113,12 +126,13 @@ bool CTexture::loadTexture(std::string strFilename)
 {
 	glGenTextures(1, &m_iText );
 	glBindTexture(GL_TEXTURE_2D, m_iText);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 
 	//The bmp is loaded with freeImage y and store in m_Bits
 	FREE_IMAGE_FORMAT fifmt = FreeImage_GetFileType(strFilename.c_str(), 0);
@@ -141,18 +155,16 @@ bool CTexture::loadTexture(std::string strFilename)
 		}
 	    
 		FreeImage_Unload(dib);	
-		//glTexStorage2D(GL_TEXTURE_2D,	5, GL_RGB8, m_iAncho, m_iAlto);
-	//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_iAncho, m_iAlto, GL_RGB, GL_UNSIGNED_BYTE,m_Bits);
-	//glGenerateMipmap(GL_TEXTURE_2D);
-		glTexImage2D( GL_TEXTURE_2D, 0, 3, m_iAncho, m_iAlto, 0,
-				GL_RGB, GL_UNSIGNED_BYTE, m_Bits );
-			glGenerateMipmap(GL_TEXTURE_2D);
+		glTexStorage2D(GL_TEXTURE_2D,	1, GL_RGB8, m_iAncho, m_iAlto);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_iAncho, m_iAlto, GL_RGB, GL_UNSIGNED_BYTE,m_Bits);
+		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, m_iAncho, m_iAlto, 0, GL_RGB, GL_UNSIGNED_BYTE, m_Bits);
+			printOpenGLError();
 		delete m_Bits;
 		m_Bits = NULL;
 		m_bValid = true;
 		return true;
 	}else{
-		std::cout<<"Couldn't open texture "<<strFilename.c_str()<<std::endl;
+		TRACE("Couldn't open texture %s\n",strFilename.c_str());
 		m_bValid = false;
 		return false;
 	}
@@ -164,8 +176,7 @@ bool CTexture::loadTexture(std::string strFilename)
 */
 void CTexture::bindTexture()
 {
-	glBindTexture( GL_TEXTURE_2D, m_iText);
-	//glGenerateMipmap(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, m_iText);
 }
 
 
@@ -177,10 +188,3 @@ GLuint CTexture::getTextId()
 {
 	return m_iText;
 }
-
-#undef FILE_REVISION
-
-// Revision History:
-// $Log: $
-// $Header: $
-// $Id: $

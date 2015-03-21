@@ -7,7 +7,6 @@ layout(location = 1) in vec4 vNormal;
 layout(location = 2) in vec4 vColor;
 layout(location = 3) in vec2 vTexCoord;
 
-
 out vec4 vVertexColor;
 out vec2 vVertexUV;
 

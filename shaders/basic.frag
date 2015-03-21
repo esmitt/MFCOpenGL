@@ -19,5 +19,6 @@ void main(void)
 	//vFragColor = vVertexColor;
 	//vFragColor = texture(sTexture, vVertexUV);
 	vFragColor = getColor(bHasTexture);
+	//vFragColor = vec4(1,0,0,0);
 	//vFragColor.a = .5 - vVertexUV.x;
 }

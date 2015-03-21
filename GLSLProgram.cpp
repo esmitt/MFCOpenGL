@@ -25,6 +25,9 @@ CGLSLProgram::~CGLSLProgram(void)
 	m_mapSubroutines.clear();
 	if(m_uIdProgram > 0)
 	{
+		glDeleteShader(m_vIdShader[VERTEX]);
+		glDeleteShader(m_vIdShader[FRAGMENT]);
+		glDeleteShader(m_vIdShader[GEOMETRY]);
 		glDeleteProgram(m_uIdProgram);
 		cout << "Program deleted! " << endl;
 	}
@@ -84,19 +87,18 @@ void CGLSLProgram::loadShader(std::string strFileName, SHADERTYPE typeShader)
 		{
 			char infoLog[1024];
 			glGetShaderInfoLog(hShader, 1024, NULL, infoLog);
-			cout << "The shader at " << strFileName.c_str() << " failed to compile with the following errors:" << endl 
-			<< infoLog << endl;
+			TRACE("The shader at %s  failed to compile with the following errors : %s\n", strFileName.c_str(), infoLog);
 			glDeleteShader(hShader);
 		}
 		else	//here, everything is OK
 		{
-			cout << "The shader at " << strFileName.c_str() << " was compiled without errors." << endl;
+			TRACE("The shader at %s was compiled without errors.\n", strFileName.c_str());
 			m_vIdShader[typeShader] = hShader;
 		}
 	}
 	else
 	{
-		std::cerr<< "something wrong loading the shader located in " << strFileName.c_str() << "." << std::endl;
+		TRACE("something wrong loading the shader located in %s .\n");
 		glDeleteShader(hShader);
 	}
 }
@@ -114,12 +116,12 @@ void CGLSLProgram::checkLinkingErrors()
 
     glGetProgramInfoLog(m_uIdProgram, infologLength, &charsWritten, infoLog);
 
-    std::cerr<<infoLog<<std::endl;
+		TRACE(infoLog);
     delete [] infoLog;
     glGetProgramiv(m_uIdProgram, GL_LINK_STATUS, &infologLength);
     if(infologLength == GL_FALSE)
     {
-      std::cerr<<"Program link failed exiting \n";
+      TRACE("Program link failed exiting\n");
       exit(EXIT_FAILURE);
     }
   }
@@ -136,9 +138,6 @@ void CGLSLProgram::create()
 	if(m_vIdShader[GEOMETRY] > 0)
 		glAttachShader(m_uIdProgram, m_vIdShader[GEOMETRY]);
 		//delete the shaders
-	glDeleteShader(m_vIdShader[VERTEX]);
-	glDeleteShader(m_vIdShader[FRAGMENT]);
-	glDeleteShader(m_vIdShader[GEOMETRY]);
 	checkLinkingErrors();
 }
 
@@ -157,9 +156,9 @@ void CGLSLProgram::create_link()
 	//check errors on linking
 	checkLinkingErrors();
 	//delete the shaders
-	glDeleteShader(m_vIdShader[VERTEX]);
-	glDeleteShader(m_vIdShader[FRAGMENT]);
-	glDeleteShader(m_vIdShader[GEOMETRY]);
+	//glDeleteShader(m_vIdShader[VERTEX]);
+	//glDeleteShader(m_vIdShader[FRAGMENT]);
+	//glDeleteShader(m_vIdShader[GEOMETRY]);
 }
 
 void CGLSLProgram::link()
@@ -168,6 +167,9 @@ void CGLSLProgram::link()
 	glLinkProgram(m_uIdProgram);
 	//check errors on linking
 	checkLinkingErrors();
+	//glDeleteShader(m_vIdShader[VERTEX]);
+	//glDeleteShader(m_vIdShader[FRAGMENT]);
+	//glDeleteShader(m_vIdShader[GEOMETRY]);
 }
 
 void CGLSLProgram::enable()

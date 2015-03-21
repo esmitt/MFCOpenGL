@@ -63,7 +63,7 @@ void COpenGLView::OnDraw(CDC* pDC)
 
 	// TODO: add draw code for native data here
 	//GetDocument()
-	GetDocument()->m_instanceOGL.DrawScene(pDC);
+	pDoc->m_instanceOGL.DrawScene(pDC);
 }
 
 // COpenGLView printing
@@ -114,6 +114,7 @@ int COpenGLView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 	CClientDC dc(this);
 	GetDocument()->m_instanceOGL.CreateGLContext(&dc);
+	GetDocument()->m_instanceOGL.InitScene("models/TableDesk-AgiSoft.obj");
 	// TODO:  Add your specialized creation code here
 
 	return 0;
