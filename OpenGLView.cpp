@@ -30,6 +30,9 @@ BEGIN_MESSAGE_MAP(COpenGLView, CView)
 	ON_WM_DESTROY()
 	ON_WM_SIZE()
 	ON_WM_ERASEBKGND()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_MOUSEMOVE()
+	ON_WM_LBUTTONUP()
 END_MESSAGE_MAP()
 
 // COpenGLView construction/destruction
@@ -37,7 +40,7 @@ END_MESSAGE_MAP()
 COpenGLView::COpenGLView()
 {
 	// TODO: add construction code here
-
+	bIsLeftMouse = false;
 }
 
 COpenGLView::~COpenGLView()
@@ -145,4 +148,33 @@ BOOL COpenGLView::OnEraseBkgnd(CDC* pDC)
 
 	//return CView::OnEraseBkgnd(pDC);
 	return TRUE;
+}
+
+
+void COpenGLView::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	bIsLeftMouse = true;
+	GetDocument()->m_instanceOGL.LButtonDown(point.x, point.y);
+	CView::OnLButtonDown(nFlags, point);
+}
+
+
+void COpenGLView::OnMouseMove(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	if (bIsLeftMouse)
+	{
+		GetDocument()->m_instanceOGL.MouseMove(point.x, point.y);
+		Invalidate(false);
+	}
+	CView::OnMouseMove(nFlags, point);
+}
+
+
+void COpenGLView::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	bIsLeftMouse = false;
+	CView::OnLButtonUp(nFlags, point);
 }

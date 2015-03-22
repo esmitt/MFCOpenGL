@@ -5,6 +5,8 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include <string>
+#include "ArcBall.h"
+
 class CGLRenderer
 {
 public:
@@ -15,9 +17,11 @@ public:
 	void Reshape(CDC* pDC, int w, int h);	// Changing viewport
 	void DrawScene(CDC* pDC);		// Draws the scene
 	void DestroyScene(CDC* pDC);		// Cleanup
+	void LButtonDown(int x, int y){ m_arcBall.OnMouseDown(glm::ivec2(x, y)); }
+	void MouseMove(int x, int y){ m_arcBall.OnMouseMove(glm::ivec2(x, y)); }
 protected:
 	HGLRC	 m_hrc;                        // OpenGL Rendering Context 
-
+	CArcBall m_arcBall;
 private:
 	C3DModel m_model;
 	CGLSLProgram m_progBase;

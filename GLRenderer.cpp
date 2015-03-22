@@ -121,6 +121,7 @@ void CGLRenderer::Reshape(CDC* pDC, int w, int h)
 	float ratio = w / float(h);
 	glViewport(0, 0, w, h);
 	m_projMatrix = glm::perspective(COGLBasic::getInstance().fAngle, ratio, COGLBasic::getInstance().fNCP, COGLBasic::getInstance().fFCP);
+	m_arcBall.Resize(w, h);
 }
 
 
@@ -133,8 +134,9 @@ void CGLRenderer::DrawScene(CDC* pDC)
 	m_modelViewMatrix = glm::translate(glm::mat4(1), -m_model.getCenter());
 	float d = 1.f / m_model.getDiagonal();
 	m_modelViewMatrix = glm::scale(glm::mat4(1), glm::vec3(d, d, d)) * m_modelViewMatrix;
-	m_modelViewMatrix = glm::translate(glm::mat4(1), glm::vec3(0, 0, -0.5)) * m_modelViewMatrix;
-
+	//m_modelViewMatrix = glm::translate(glm::mat4(1), glm::vec3(0, 0, -0.5)) * m_modelViewMatrix;
+	m_modelViewMatrix = glm::translate(glm::mat4(1), glm::vec3(0, 0, -0.5)) * m_arcBall.GetTransformation() * m_modelViewMatrix;
+	//m_modelViewMatrix =  * m_modelViewMatrix;
 	m_progBase.enable();
 		glActiveTexture(GL_TEXTURE0);
 		glUniformMatrix4fv(m_progBase.getLocation("mModelView"), 1, GL_FALSE, glm::value_ptr(m_modelViewMatrix));

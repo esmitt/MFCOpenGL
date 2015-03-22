@@ -32,5 +32,5 @@ public:
 	float getDiagonal();
 
 	inline void resetPoints(){m_pMin = glm::vec3(std::numeric_limits<float>::max());
-	m_pMax = glm::vec3(-999999.99);}
+	m_pMax = glm::vec3(-999999.99f);}
 };
