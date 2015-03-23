@@ -29,8 +29,9 @@ int printOglError(char *file, int line)
 ///
 C3DModel::C3DModel()
 {
-	m_uVBO = m_uVBOIndex = m_uVBOColor = 0;
+	m_uVBO = m_uVAOVertex = m_uVBOIndex = m_uVBOColor = 0;
 	m_iIndexSize = 0;
+	m_iNPoints = -1;
 	m_vMaterial.clear();
 	m_vMesh.clear();
 	m_vTexture.clear();
@@ -42,14 +43,20 @@ C3DModel::C3DModel()
 ///
 C3DModel::~C3DModel()
 {
-	if(m_uVBO != 0)	glDeleteBuffers(1, &m_uVBO);
-	if(m_uVBOIndex != 0) glDeleteBuffers(1, &m_uVBOIndex);
-	if(m_uVBOColor!= 0) glDeleteBuffers(1, &m_uVBOColor);
 	m_vMaterial.clear();
 	m_vMesh.clear();
 	m_vTexture.clear();
 	m_vTextureMatIndex.clear();
-	std::cout << "model unloaded" << std::endl;
+	deleteBuffers();
+	TRACE("model unloaded\n");
+}
+
+void C3DModel::deleteBuffers()
+{
+	if (m_uVBO != 0)	glDeleteBuffers(1, &m_uVBO);
+	if (m_uVAOVertex != 0)	glDeleteBuffers(1, &m_uVAOVertex);
+	if (m_uVBOIndex != 0) glDeleteBuffers(1, &m_uVBOIndex);
+	if (m_uVBOColor != 0) glDeleteBuffers(1, &m_uVBOColor);
 }
 
 //void printvec4(glm::vec4 v)
@@ -256,33 +263,43 @@ bool C3DModel::load(const std::string & sFilename, const CGLSLProgram & program,
 		}
 	}
 	
-	//creating the VAO
+	//creating the VAO for the model
 	glGenVertexArrays(1, &m_uVAO);
 	glBindVertexArray(m_uVAO);
 
-	//creating the VBO
-	glGenBuffers(1, &m_uVBO);
-	glGenBuffers(1, &m_uVBOIndex);
+		//creating the VBO
+		glGenBuffers(1, &m_uVBO);
+		glGenBuffers(1, &m_uVBOIndex);
 
-	m_iIndexSize = vIndex.size();
-	glBindBuffer(GL_ARRAY_BUFFER, m_uVBO);
-	glBufferData(GL_ARRAY_BUFFER, vVertex.size() * sizeof(Vertex), &vVertex[0], GL_STATIC_DRAW);
+		m_iIndexSize = vIndex.size();
+		glBindBuffer(GL_ARRAY_BUFFER, m_uVBO);
+		glBufferData(GL_ARRAY_BUFFER, vVertex.size() * sizeof(Vertex), &vVertex[0], GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_uVBOIndex);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, vIndex.size()*sizeof(GL_UNSIGNED_INT), &vIndex[0], GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_uVBOIndex);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, vIndex.size()*sizeof(GL_UNSIGNED_INT), &vIndex[0], GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(0)); //Vertex
-	glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(0)); //Vertex
+		glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(GL_FLOAT) * 4)); //Normals
-	glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(GL_FLOAT) * 4)); //Normals
+		glEnableVertexAttribArray(1);
 	
-	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(GL_FLOAT) * 7)); //color
-	glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(GL_FLOAT) * 7)); //color
+		glEnableVertexAttribArray(2);
 
-	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(GL_FLOAT) * 11)); //Text Coord
-	glEnableVertexAttribArray(3);
+		glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(GL_FLOAT) * 11)); //Text Coord
+		glEnableVertexAttribArray(3);
 
+	glBindVertexArray(0);	//VAO
+
+	m_iNPoints = vVertex.size();
+	//creating the VAO for the vertexs
+	glGenVertexArrays(1, &m_uVAOVertex);
+	glBindVertexArray(m_uVAOVertex);
+		//glBindBuffer(GL_ARRAY_BUFFER, m_uVBO);
+		//glBufferData(GL_ARRAY_BUFFER, vVertex.size() * sizeof(Vertex), &vVertex[0], GL_STATIC_DRAW);
+		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(0)); //Vertex
+		glEnableVertexAttribArray(0);
 	glBindVertexArray(0);	//VAO
 
 	loadTextures(sFilename, scene);
@@ -359,7 +376,7 @@ void C3DModel::loadTextures(const std::string& sFilename, const aiScene* pScene)
 		if (!m_vTexture[i].isValid() && !repeated)
 		{
 			//Material m1 = m_vMaterial[i];
-			m_vTexture[i].loadTexture("objects/white.png");
+			m_vTexture[i].loadTexture("models//white.png");
 			//pMaterial->
 			//m_vTexture[i].loadColor("objects/white.png");
 			m_vTextureMatIndex[i] = i;
@@ -370,7 +387,7 @@ void C3DModel::loadTextures(const std::string& sFilename, const aiScene* pScene)
 ///
 /// Method to draw the object
 ///
-void C3DModel::draw()
+void C3DModel::drawObject()
 {
 	glBindVertexArray(m_uVAO);
 	for(int k = 0; k < m_vMesh.size(); k++)
@@ -380,5 +397,14 @@ void C3DModel::draw()
 		glDrawElementsBaseVertex(GL_TRIANGLES, m_vMesh[k].iCount, GL_UNSIGNED_INT, NULL, m_vMesh[k].iFirst);
 	}
 	glBindVertexArray(0);
+}
 
+///
+/// Method to draw points over surface
+///
+void C3DModel::drawPoints()
+{
+	glBindVertexArray(m_uVAOVertex);
+		glDrawArrays(GL_POINTS, 0, m_iNPoints);
+	glBindVertexArray(0);
 }

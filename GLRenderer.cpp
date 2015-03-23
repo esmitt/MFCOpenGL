@@ -91,6 +91,11 @@ void CGLRenderer::InitScene(std::string strFilename)
 	glEnable(GL_DEPTH_TEST);
 	//glEnable(GL_CULL_FACE);
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//to draw the points
+	glPolygonOffset(1, 1);
+	glEnable(GL_POLYGON_OFFSET_FILL);
+	glPointSize(0.5f);
+
 	glClearColor(0.15f, 0.15f, 0.15f, 1.f);
 	m_progBase.loadShader("shaders/basic.vert", CGLSLProgram::VERTEX);
 	m_progBase.loadShader("shaders/basic.frag", CGLSLProgram::FRAGMENT);
@@ -105,6 +110,17 @@ void CGLRenderer::InitScene(std::string strFilename)
 		m_progBase.addUniform("bHasTexture");
 		m_progBase.addUniform("sTexture");
 	m_progBase.disable();
+	//to draw the points
+	m_vVertexColor = glm::vec3(1.0f, 1.0f, 1.0f);
+	m_progVertex.loadShader("shaders/vertex.vert", CGLSLProgram::VERTEX);
+	m_progVertex.loadShader("shaders/vertex.frag", CGLSLProgram::FRAGMENT);
+	m_progVertex.create_link();
+	m_progVertex.enable();
+		m_progVertex.addAttribute("vVertex");
+		m_progVertex.addUniform("vColor");
+		m_progVertex.addUniform("mModelView");
+		m_progVertex.addUniform("mProjection");
+	m_progVertex.disable();
 	if (!m_model.load(strFilename.c_str(), m_progBase))
 	{
 		AfxMessageBox(L"Problems Loading the file");
@@ -124,7 +140,6 @@ void CGLRenderer::Reshape(CDC* pDC, int w, int h)
 	m_arcBall.Resize(w, h);
 }
 
-
 void CGLRenderer::DrawScene(CDC* pDC)
 {
 	wglMakeCurrent(pDC->m_hDC, m_hrc);
@@ -137,21 +152,34 @@ void CGLRenderer::DrawScene(CDC* pDC)
 	//m_modelViewMatrix = glm::translate(glm::mat4(1), glm::vec3(0, 0, -0.5)) * m_modelViewMatrix;
 	m_modelViewMatrix = glm::translate(glm::mat4(1), glm::vec3(0, 0, -0.5)) * m_arcBall.GetTransformation() * m_modelViewMatrix;
 	//m_modelViewMatrix =  * m_modelViewMatrix;
+	
+	//draw the object
 	m_progBase.enable();
 		glActiveTexture(GL_TEXTURE0);
 		glUniformMatrix4fv(m_progBase.getLocation("mModelView"), 1, GL_FALSE, glm::value_ptr(m_modelViewMatrix));
 		glUniformMatrix4fv(m_progBase.getLocation("mProjection"), 1, GL_FALSE, glm::value_ptr(m_projMatrix));
 		glUniform1i(m_progBase.getLocation("bHasTexture"), 1);	//0 false, otherwise true
 		glUniform1i(m_progBase.getLocation("sTexture"), 0);
-		m_model.draw();
+		m_model.drawObject();
 	m_progBase.disable();
+	//draw points
+	m_progVertex.enable();
+		glUniformMatrix4fv(m_progVertex.getLocation("mModelView"), 1, GL_FALSE, glm::value_ptr(m_modelViewMatrix));
+		glUniformMatrix4fv(m_progVertex.getLocation("mProjection"), 1, GL_FALSE, glm::value_ptr(m_projMatrix));
+		glUniform3fv(m_progVertex.getLocation("vColor"), 1, glm::value_ptr(m_vVertexColor));
+		m_model.drawPoints();
+	m_progVertex.disable();
 
+	assert(glGetError() == GL_NO_ERROR);
 	SwapBuffers(pDC->m_hDC);
 }
 
 void CGLRenderer::DestroyScene(CDC* pDC)
 {
-	//m_progBase.~CGLSLProgram();		//problems with that before the shaders are not destroyed
+	wglMakeCurrent(pDC->m_hDC, m_hrc);
+	m_progBase.deleteShaders();
+	m_progVertex.deleteShaders();
+	m_model.deleteBuffers();
 	wglMakeCurrent(NULL, NULL);
 	if (m_hrc)
 	{

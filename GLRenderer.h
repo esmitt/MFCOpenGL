@@ -22,9 +22,11 @@ public:
 protected:
 	HGLRC	 m_hrc;                        // OpenGL Rendering Context 
 	CArcBall m_arcBall;
+	glm::vec3 m_vVertexColor;			//color of vertex drawn
 private:
 	C3DModel m_model;
 	CGLSLProgram m_progBase;
+	CGLSLProgram m_progVertex;
 	glm::mat4x4 m_projMatrix, m_modelViewMatrix;
 };
 

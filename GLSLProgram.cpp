@@ -23,7 +23,12 @@ CGLSLProgram::~CGLSLProgram(void)
 {
 	m_mapVarShader.clear();
 	m_mapSubroutines.clear();
-	if(m_uIdProgram > 0)
+	deleteShaders();
+}
+
+void CGLSLProgram::deleteShaders()
+{
+	if (m_uIdProgram > 0)
 	{
 		glDeleteShader(m_vIdShader[VERTEX]);
 		glDeleteShader(m_vIdShader[FRAGMENT]);

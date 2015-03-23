@@ -63,10 +63,11 @@ private:
 	unsigned int m_uVBO;
 	unsigned int m_uVBOIndex;
 	unsigned int m_uVBOColor;
-	GLuint m_uVAO;
+	int m_iNPoints;
+	GLuint m_uVAO;		//for the model
+	GLuint m_uVAOVertex;	//for the vertexes
 	unsigned int m_iIndexSize;
 	bool m_bHasTextures;
-
 
 	/// Recursive to explore all the elements
 	//void fillNode(const struct aiNode* pNode, glm::mat4 mMatrix);
@@ -89,7 +90,10 @@ public:
 	bool load(const std::string & sFilename, const CGLSLProgram & program, glm::vec3 pCenterOn = glm::vec3(0));
 
 	///Draw the object using the VBO
-	void draw();
+	void drawObject();
+
+	///Draw points using the VBO
+	void drawPoints();
 
 	///Get the center of the object
 	inline glm::vec3 getCenter(){return m_bbox.getCenter();}
@@ -97,6 +101,7 @@ public:
 	///Get the lenght of the diagonal of bounding box
 	inline float getDiagonal(){return m_bbox.getDiagonal();}
 
-	void centerOnPoint(glm::vec3 p);
+	//void centerOnPoint(glm::vec3 p);
+	void deleteBuffers();
 };
 #endif

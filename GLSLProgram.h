@@ -23,6 +23,7 @@ public:
 	void link();
 	void enable();
 	void disable();
+	void deleteShaders();
 	void addAttribute(std::string strParName);
 	void addSubroutine(std::string strFunctionName, unsigned int iShaderType);
 	void addUniform(std::string strParName);

@@ -72,7 +72,8 @@ void CArcBall::OnMouseDown(glm::ivec2 point)
 void CArcBall::OnMouseMove(glm::ivec2 point)
 {
 	m_vDragVector = mapToSphere(point);
-	glm::vec3 perp = glm::cross(m_vClickVector, m_vDragVector);
+	//glm::vec3 perp = glm::cross(m_vClickVector, m_vDragVector);
+	glm::vec3 perp = glm::cross(m_vDragVector, m_vClickVector);
 	glm::vec4 vNewRot(0);
 	if (glm::length(perp) > m_fEpsilon)
 	{
