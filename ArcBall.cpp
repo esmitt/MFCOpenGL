@@ -6,6 +6,8 @@ CArcBall::CArcBall()
 {
 	m_fWidth = 1;
 	m_fHeight = 1;
+	m_iWidthCanvas = 1;
+	m_iHeightCanvas = 1;
 }
 
 
@@ -16,6 +18,8 @@ CArcBall::~CArcBall()
 void CArcBall::Resize(float NewWidth, float NewHeight)
 {
 	//Set adjustment factor for width/height
+	m_iWidthCanvas = (int)NewWidth;
+	m_iHeightCanvas = (int)NewHeight;
 	m_fWidth = 1.0f / ((NewWidth - 1.0f) * 0.5f);
 	m_fHeight = 1.0f / ((NewHeight - 1.0f) * 0.5f);
 }
@@ -69,7 +73,7 @@ void CArcBall::OnMouseDown(glm::ivec2 point)
 	m_MouseStart = point;
 }
 
-void CArcBall::OnMouseMove(glm::ivec2 point)
+void CArcBall::OnMouseMove(glm::ivec2 point, MOUSE_OP action)
 {
 	m_vDragVector = mapToSphere(point);
 	//glm::vec3 perp = glm::cross(m_vClickVector, m_vDragVector);
@@ -82,10 +86,36 @@ void CArcBall::OnMouseMove(glm::ivec2 point)
 		vNewRot.z = perp.z;
 		vNewRot.w = glm::dot(m_vClickVector, m_vDragVector);
 	}
-	m_mThisTranf.SetPan(glm::vec3(0));
-	m_mThisTranf.SetScale(1.0f);
-	m_mThisTranf.SetRotation(vNewRot);
-	m_mThisTranf.SetMatrix(m_mThisTranf.GetMatrix() * m_mLastTranf.GetMatrix());
+	//vNewRot is the quaternion equivalent to rotation
+/*	if (action == TRANSLATE)
+	{
+		float x = (float)(point.x - m_MouseStart.x) / (float)m_iWidthCanvas;
+		float y = (float)(point.y - m_MouseStart.y) / (float)m_iHeightCanvas;
+		float z = 0.0f;
+		glm::vec4 vNewRot2(0);
+		m_mThisTranf.SetPan(glm::vec3(x, y, z));
+		m_mThisTranf.SetScale(1.0f);
+		m_mThisTranf.SetRotation(vNewRot2);
+		m_mThisTranf.SetMatrix(m_mThisTranf.GetMatrix() * m_mLastTranf.GetMatrix());
+	}
+	else*/ 
+		if (action == SCALE)
+	{
+		double len = glm::sqrt(m_MouseStart.x * m_MouseStart.x + m_MouseStart.y * m_MouseStart.y)
+			/ glm::sqrt(point.x * point.x + point.y * point.y);
+		glm::vec4 vNewRot2(0);
+		m_mThisTranf.SetPan(glm::vec3(0));
+		m_mThisTranf.SetScale((float)len);
+		m_mThisTranf.SetRotation(vNewRot2);
+		m_mThisTranf.SetMatrix(m_mThisTranf.GetMatrix() * m_mLastTranf.GetMatrix());// Accumulate Last Rotation Into This One
+	}
+	else if (action == ROTATE)
+	{
+		m_mThisTranf.SetPan(glm::vec3(0));
+		m_mThisTranf.SetScale(1.0f);
+		m_mThisTranf.SetRotation(vNewRot);
+		m_mThisTranf.SetMatrix(m_mThisTranf.GetMatrix() * m_mLastTranf.GetMatrix());
+	}
 }
 
 void CArcBall::OnMouseUp(glm::ivec2 point)

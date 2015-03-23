@@ -32,7 +32,7 @@ void CArcBallMatrix::SetRotation(const glm::vec4 & vquat)
 	float xx, xy, xz;
 	float yy, yz, zz;
 
-	//n = (value.x * value.x) + (value.y * value.y) + (value.z * value.z) + (value.w * value.w);
+	//n = (vquat.x * vquat.x) + (vquat.y * vquat.y) + (vquat.z * vquat.z) + (vquat.w * vquat.w);
 	n = glm::dot(vquat, vquat);
 	s = (n > 0.0f) ? 2.0f / n : 0.0f;
 
@@ -69,10 +69,9 @@ void CArcBallMatrix::SetRotation(const glm::vec4 & vquat)
 	m_Matrix[1][3] = m_vPan.y;
 	
 	// scale (zoom)
-	m_Matrix[0][0] *= m_fScale;
-	m_Matrix[1][1] *= m_fScale;
-	m_Matrix[2][2] *= m_fScale;
-	m_Matrix[3][3] *= m_fScale;
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
+			m_Matrix[i, j] *= m_fScale;
 }
 
 void CArcBallMatrix::Reset()

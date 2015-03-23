@@ -33,6 +33,10 @@ BEGIN_MESSAGE_MAP(COpenGLView, CView)
 	ON_WM_LBUTTONDOWN()
 	ON_WM_MOUSEMOVE()
 	ON_WM_LBUTTONUP()
+	ON_WM_RBUTTONDOWN()
+	ON_WM_RBUTTONUP()
+	ON_WM_MBUTTONDOWN()
+	ON_WM_MBUTTONUP()
 END_MESSAGE_MAP()
 
 // COpenGLView construction/destruction
@@ -41,6 +45,8 @@ COpenGLView::COpenGLView()
 {
 	// TODO: add construction code here
 	bIsLeftMouse = false;
+	bIsCenterMouse = false;
+	bIsRightMouse = false;
 }
 
 COpenGLView::~COpenGLView()
@@ -154,8 +160,11 @@ BOOL COpenGLView::OnEraseBkgnd(CDC* pDC)
 void COpenGLView::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
-	bIsLeftMouse = true;
-	GetDocument()->m_instanceOGL.LButtonDown(point.x, point.y);
+	if (nFlags == MK_LBUTTON)
+	{
+		bIsLeftMouse = true;
+		GetDocument()->m_instanceOGL.MouseDown(point.x, point.y);
+	}
 	CView::OnLButtonDown(nFlags, point);
 }
 
@@ -164,17 +173,62 @@ void COpenGLView::OnMouseMove(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
 	if (bIsLeftMouse)
-	{
-		GetDocument()->m_instanceOGL.MouseMove(point.x, point.y);
-		Invalidate(false);
-	}
+		GetDocument()->m_instanceOGL.MouseMove(point.x, point.y, ROTATE);
+	else if (bIsRightMouse)
+		GetDocument()->m_instanceOGL.MouseMove(point.x, point.y, TRANSLATE);
+	else if (bIsCenterMouse)
+		GetDocument()->m_instanceOGL.MouseMove(point.x, point.y, SCALE);
+	
+	Invalidate(false);
 	CView::OnMouseMove(nFlags, point);
 }
-
 
 void COpenGLView::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
-	bIsLeftMouse = false;
+	if (bIsLeftMouse)
+		bIsLeftMouse = false;	//it could be an if/else statement but its the same
 	CView::OnLButtonUp(nFlags, point);
+}
+
+
+void COpenGLView::OnRButtonDown(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	if (nFlags == MK_RBUTTON)
+	{
+		bIsRightMouse = true;
+		GetDocument()->m_instanceOGL.MouseDown(point.x, point.y);
+	}
+	CView::OnRButtonDown(nFlags, point);
+}
+
+
+void COpenGLView::OnRButtonUp(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	if (bIsRightMouse)
+		bIsRightMouse = false;
+	CView::OnRButtonUp(nFlags, point);
+}
+
+
+void COpenGLView::OnMButtonDown(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	if (nFlags == MK_MBUTTON)
+	{
+		bIsCenterMouse = true;
+		GetDocument()->m_instanceOGL.MouseDown(point.x, point.y);
+	}
+	CView::OnMButtonDown(nFlags, point);
+}
+
+
+void COpenGLView::OnMButtonUp(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	if (bIsCenterMouse)
+		bIsCenterMouse = false;
+	CView::OnMButtonUp(nFlags, point);
 }

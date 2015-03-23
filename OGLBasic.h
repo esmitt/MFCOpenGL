@@ -1,4 +1,8 @@
 #pragma once
+typedef unsigned char MOUSE_OP;
+const MOUSE_OP ROTATE = 0;
+const MOUSE_OP TRANSLATE = 1;
+const MOUSE_OP SCALE = 2;
 class COGLBasic
 {
 public:

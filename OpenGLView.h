@@ -35,6 +35,8 @@ public:
 
 protected:
 	bool bIsLeftMouse;
+	bool bIsRightMouse;
+	bool bIsCenterMouse;
 // Generated message map functions
 protected:
 	DECLARE_MESSAGE_MAP()
@@ -46,6 +48,10 @@ public:
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
+	afx_msg void OnMButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnMButtonUp(UINT nFlags, CPoint point);
 };
 
 #ifndef _DEBUG  // debug version in OpenGLView.cpp

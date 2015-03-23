@@ -16,6 +16,7 @@ CGLSLProgram::CGLSLProgram(void)
 	m_vIdShader[TESSELATION] = 0;
 	m_mapVarShader.clear();
 	m_mapSubroutines.clear();
+	m_uIdProgram = -1;
 }
 
 
@@ -34,7 +35,8 @@ void CGLSLProgram::deleteShaders()
 		glDeleteShader(m_vIdShader[FRAGMENT]);
 		glDeleteShader(m_vIdShader[GEOMETRY]);
 		glDeleteProgram(m_uIdProgram);
-		cout << "Program deleted! " << endl;
+		m_uIdProgram - 1;
+		TRACE("Program deleted!\n");
 	}
 }
 

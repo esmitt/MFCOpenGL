@@ -174,6 +174,16 @@ void CGLRenderer::DrawScene(CDC* pDC)
 	SwapBuffers(pDC->m_hDC);
 }
 
+void CGLRenderer::MouseDown(int x, int y)
+{
+	m_arcBall.OnMouseDown(glm::ivec2(x, y));
+}
+
+void CGLRenderer::MouseMove(int x, int y, MOUSE_OP operation)
+{
+	m_arcBall.OnMouseMove(glm::ivec2(x, y), operation);
+}
+
 void CGLRenderer::DestroyScene(CDC* pDC)
 {
 	wglMakeCurrent(pDC->m_hDC, m_hrc);
